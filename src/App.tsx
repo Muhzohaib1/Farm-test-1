@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { HashRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { useSession } from './auth/session'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { Toast } from './components/ui'
 import { DataProvider } from './data'
 import { I18nProvider, useI18n } from './i18n'
@@ -46,6 +47,11 @@ function ScrollTop() {
   return null
 }
 
+function RouteBoundary({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation()
+  return <ErrorBoundary resetKey={pathname}>{children}</ErrorBoundary>
+}
+
 function Shell() {
   const { profile, unlocked } = useSession()
   useEffect(() => {
@@ -57,6 +63,7 @@ function Shell() {
     <DataProvider>
       <HashRouter>
         <ScrollTop />
+        <RouteBoundary>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/animals" element={<Animals />} />
@@ -86,6 +93,7 @@ function Shell() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Home />} />
         </Routes>
+        </RouteBoundary>
         <BottomNav />
       </HashRouter>
     </DataProvider>
@@ -95,7 +103,9 @@ function Shell() {
 export function App() {
   return (
     <I18nProvider>
-      <Shell />
+      <ErrorBoundary>
+        <Shell />
+      </ErrorBoundary>
       <Toast />
     </I18nProvider>
   )
