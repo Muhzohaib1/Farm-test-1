@@ -1060,8 +1060,22 @@ textarea.input {
   gap: 14px;
 }
 .auth-logo {
-  font-size: 3.5rem;
-  text-align: center;
+  display: block;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  flex: none;
 }
 .auth-title {
   text-align: center;
@@ -1146,4 +1160,18 @@ textarea.input {
   padding: 10px;
   max-height: 50vh;
   overflow: auto;
+}
+
+/* Home header: keep the full app name; let a long sync message wrap instead */
+.home-top h1 {
+  overflow: visible;
+  white-space: nowrap;
+  flex: 1 0 auto;
+}
+.home-top .sync-badge {
+  flex: 0 1 auto;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.25;
+  max-width: 48%;
 }

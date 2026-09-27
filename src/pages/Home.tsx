@@ -8,6 +8,7 @@ import { useI18n, type Key, type T } from '../i18n'
 import { computeAlerts, type Alert } from '../logic/alerts'
 import { headcount, herdOverTime, last12Months } from '../logic/stats'
 import { today } from '../lib/dates'
+import logo from '../assets/logo.png'
 
 const AGE_COLORS = ['#86b6ef', '#3987e5', '#1c5cab', '#c3c2b7'] // sequential blue (young → adult), grey = unknown
 
@@ -39,7 +40,7 @@ export function Home() {
   return (
     <div className="page">
       <header className="topbar home-top">
-        <h1>🐐 {t('app_name')}</h1>
+        <h1 className="brand"><img src={logo} alt="" /> {t('app_name')}</h1>
         <SyncBadge />
       </header>
       <main className="content">

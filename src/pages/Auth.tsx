@@ -4,6 +4,7 @@ import { Btn, Field, TextIn } from '../components/ui'
 import { useI18n } from '../i18n'
 import { getConfig, saveConfig } from '../sync/supabase'
 import { installApp, useCanInstall } from '../lib/install'
+import logo from '../assets/logo.png'
 
 export function LangSwitch() {
   const { lang, setLang } = useI18n()
@@ -126,7 +127,7 @@ export function Setup() {
   return (
     <div className="auth">
       <LangSwitch />
-      <div className="auth-logo">🐐🐑</div>
+      <img className="auth-logo" src={logo} alt="" />
       <h1 className="auth-title">{t('app_name')}</h1>
       <p className="muted center">{t('app_tagline')}</p>
       <InstallButton />
@@ -188,7 +189,7 @@ export function Lock() {
   return (
     <div className="auth">
       <LangSwitch />
-      <div className="auth-logo">🐐🐑</div>
+      <img className="auth-logo" src={logo} alt="" />
       <p className="center">{profile?.name}</p>
       <PinPad
         title={t('enter_pin')}
