@@ -1,5 +1,5 @@
 export const en = {
-  app_name: 'Rewar',
+  app_name: 'Mir Farm',
   app_tagline: 'Sheep & goat farm',
 
   // navigation

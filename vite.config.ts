@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Rewar — Farm Manager',
-        short_name: 'Rewar',
+        name: 'Mir Farm',
+        short_name: 'Mir Farm',
         description: 'Sheep and goat farm records',
         theme_color: '#2f5d3a',
         background_color: '#f6f3ea',

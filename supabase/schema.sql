@@ -1,4 +1,4 @@
--- Rewar farm app: run this once in Supabase → SQL Editor → New query → Run.
+-- Mir Farm app: run this once in Supabase → SQL Editor → New query → Run.
 -- Then add yourself as owner at the bottom (change the email).
 
 -- Who may use the farm data. Emails must match Supabase Auth users.

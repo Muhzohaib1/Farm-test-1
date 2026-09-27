@@ -127,7 +127,7 @@ function download(blob: Blob, name: string) {
 const stamp = () => today()
 
 export function downloadCSV(sheet: Sheet) {
-  download(new Blob([toCSV(sheet)], { type: 'text/csv;charset=utf-8' }), `rewar-${sheet.name.toLowerCase().replace(/\s+/g, '-')}-${stamp()}.csv`)
+  download(new Blob([toCSV(sheet)], { type: 'text/csv;charset=utf-8' }), `mir-farm-${sheet.name.toLowerCase().replace(/\s+/g, '-')}-${stamp()}.csv`)
 }
 
 export async function downloadExcel(sheets: Sheet[]) {
@@ -149,5 +149,5 @@ export async function downloadExcel(sheets: Sheet[]) {
       columns: s.headers.map((h) => ({ width: Math.max(12, h.length + 2) })),
     })) as never,
   ).toBlob()
-  download(blob, `rewar-farm-${stamp()}.xlsx`)
+  download(blob, `mir-farm-${stamp()}.xlsx`)
 }

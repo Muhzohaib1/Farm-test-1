@@ -1,4 +1,4 @@
-# Rewar (ریوڑ) — Sheep & Goat Farm Manager
+# Mir Farm (میر فارم) — Sheep & Goat Farm Manager
 
 A mobile-first web app for a small sheep and goat farm in Dera Ismail Khan. It installs on an Android phone
 like a normal app, works with no internet, and syncs when the connection returns. English and Urdu.

@@ -19,6 +19,7 @@ class FarmDB extends Dexie {
   outbox!: Table<OutboxEntry, string>
   meta!: Table<Meta, string>
   constructor() {
+    // Internal name from the app's first version. Never change it: phones would lose their saved records.
     super('rewar-farm')
     const stores: Record<string, string> = { outbox: 'key, at', meta: 'key' }
     for (const t of TABLE_NAMES) stores[t] = 'id, updatedAt'

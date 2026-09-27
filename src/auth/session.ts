@@ -83,6 +83,7 @@ export function getProfile() {
 }
 
 export async function hashPin(pin: string): Promise<string> {
+  // Fixed prefix from the first version; changing it would invalidate every saved PIN.
   const data = new TextEncoder().encode(`rewar:${pin}`)
   if (crypto?.subtle) {
     const buf = await crypto.subtle.digest('SHA-256', data)

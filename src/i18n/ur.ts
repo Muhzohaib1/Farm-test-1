@@ -1,7 +1,7 @@
 import type { Dict } from './en'
 
 export const ur: Dict = {
-  app_name: 'ریوڑ',
+  app_name: 'میر فارم',
   app_tagline: 'بھیڑ بکری فارم',
 
   nav_home: 'ہوم',
