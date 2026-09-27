@@ -2,6 +2,7 @@
 -- Then add yourself as owner at the bottom (change the email).
 
 -- Who may use the farm data. Emails must match Supabase Auth users.
+-- role 'owner' is shown in the app as Admin, 'manager' as Data entry.
 create table if not exists farm_members (
   email text primary key,
   name text,

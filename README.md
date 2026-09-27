@@ -3,8 +3,8 @@
 A mobile-first web app for a small sheep and goat farm in Dera Ismail Khan. It installs on an Android phone
 like a normal app, works with no internet, and syncs when the connection returns. English and Urdu.
 
-- **Farm manager** (on the farm): records births, matings, health, weights, sales and expenses.
-- **Owner** (abroad): sees everything, including profit & loss, and manages who can use the app.
+- **Data entry** (e.g. the farm manager): records births, matings, health, weights, sales and expenses.
+- **Admin** (e.g. the owner abroad): sees everything, including profit & loss, and manages who can use the app.
 
 ---
 
@@ -18,7 +18,7 @@ like a normal app, works with no internet, and syncs when the connection returns
 | Quarantine | Bought animals start a 21-day quarantine with a checklist and daily checks; they can join the main herd only when everything is done. |
 | Growth | Weights over time, growth chart per animal, newborns compared by season. |
 | Sheep | Shearing records with wool weight and income. |
-| Money | Sales (Eid, meat, breeding stock) and expenses by category. Monthly and yearly profit/loss (owner only). Treatment, vaccine and dewormer costs and animal purchase prices are counted automatically. |
+| Money | Sales (Eid, meat, breeding stock) and expenses by category. Monthly and yearly profit/loss (admins only). Treatment, vaccine and dewormer costs and animal purchase prices are counted automatically. |
 | Dashboard | Headcount by species, sex and age; births, deaths and newborn mortality for the last 12 months; herd size chart; and a **Needs attention** list. |
 | Export | One Excel file with all data (one sheet per record type), or CSV per sheet. |
 
@@ -47,11 +47,11 @@ the farm from abroad, set up the free online database (Supabase) and put the app
 
 (Instead of step 3 you can paste the URL and key into the app itself on the first screen under *Online sync settings*.)
 
-### 3. Add the farm manager
+### 3. Add family members
 
-1. Owner: open the app → **More → Settings → Users** → enter the manager's email, choose *Farm manager*, **Add user**.
+1. Admin: open the app → **More → Settings → Users** → enter their email, choose *Data entry* or *Admin*, **Add user**.
 2. In Supabase **Authentication → Users → Add user**, create the same email with a password (tick *Auto Confirm User*).
-3. Give the manager the website link, email and password.
+3. Give them the website link, email and password.
 
 ### 4. Install on the Android phone
 
@@ -82,7 +82,7 @@ If the project ever does pause, open the Supabase dashboard and click **Restore 
 
 ## Roles
 
-| | Owner | Farm manager |
+| | Admin | Data entry |
 |---|---|---|
 | Add and edit all records | ✓ | ✓ |
 | Delete records | ✓ | only their own, within 24 hours |
