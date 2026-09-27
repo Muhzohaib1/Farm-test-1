@@ -73,6 +73,13 @@ After that, the app opens with the PIN and works without internet. The badge at 
 - If two phones both add a new animal while offline, they could pick the same tag. The dashboard shows a
   **"Tag used twice"** alert so one can be renamed.
 
+## Keeping the free database awake
+
+Free Supabase projects pause after about 7 days with no activity. A small Netlify scheduled function
+(`netlify/functions/keep-alive.mjs`) reads from the database once a day so that never happens. Check it under
+Netlify → **Logs → Functions → keep-alive**: each day it should log `keep-alive: Supabase answered 200`.
+If the project ever does pause, open the Supabase dashboard and click **Restore project**. No data is lost.
+
 ## Roles
 
 | | Owner | Farm manager |
