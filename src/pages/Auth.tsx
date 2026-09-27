@@ -3,6 +3,7 @@ import { getProfile, hashPin, saveProfile, setUnlocked, signIn, signOut, useSess
 import { Btn, Field, TextIn } from '../components/ui'
 import { useI18n } from '../i18n'
 import { getConfig, saveConfig } from '../sync/supabase'
+import { installApp, useCanInstall } from '../lib/install'
 
 export function LangSwitch() {
   const { lang, setLang } = useI18n()
@@ -11,6 +12,18 @@ export function LangSwitch() {
       <button className={lang === 'en' ? 'on' : ''} onClick={() => setLang('en')}>English</button>
       <button className={lang === 'ur' ? 'on' : ''} onClick={() => setLang('ur')}>اردو</button>
     </div>
+  )
+}
+
+/** Big one-tap install button, shown only when Chrome allows installing. */
+export function InstallButton() {
+  const { t } = useI18n()
+  const can = useCanInstall()
+  if (!can) return null
+  return (
+    <Btn kind="secondary" onClick={() => void installApp()}>
+      📲 {t('install_app')}
+    </Btn>
   )
 }
 
@@ -116,6 +129,7 @@ export function Setup() {
       <div className="auth-logo">🐐🐑</div>
       <h1 className="auth-title">{t('app_name')}</h1>
       <p className="muted center">{t('app_tagline')}</p>
+      <InstallButton />
 
       {online ? (
         <div className="card">

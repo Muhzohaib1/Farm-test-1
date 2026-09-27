@@ -350,6 +350,7 @@ export const en = {
 
   // more / settings
   more_title: 'More',
+  install_app: 'Install app on this phone',
   settings: 'Settings',
   language: 'Language',
   export: 'Export data',

@@ -9,7 +9,7 @@ import { useI18n, type Key } from '../i18n'
 import { buildSheets, downloadCSV, downloadExcel } from '../lib/export'
 import { getConfig, saveConfig, supabase } from '../sync/supabase'
 import { syncNow, syncStore } from '../sync/sync'
-import { LangSwitch, SetPin } from './Auth'
+import { InstallButton, LangSwitch, SetPin } from './Auth'
 
 export function More() {
   const { t } = useI18n()
@@ -26,6 +26,7 @@ export function More() {
   return (
     <Page title={t('more_title')} back={false}>
       <LangSwitch />
+      <InstallButton />
       <div className="action-grid">
         {items.map((x) => (
           <Link key={x.to} to={x.to} className="action-tile">

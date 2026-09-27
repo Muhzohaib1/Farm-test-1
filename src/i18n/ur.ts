@@ -339,6 +339,7 @@ export const ur: Dict = {
   al_duplicate_tag: 'ٹیگ {tag} دو بار درج ہے — ایک کو درست کریں',
 
   more_title: 'مزید',
+  install_app: 'ایپ اس فون پر انسٹال کریں',
   settings: 'ترتیبات',
   language: 'زبان',
   export: 'ڈیٹا ڈاؤن لوڈ',
