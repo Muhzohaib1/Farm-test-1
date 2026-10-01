@@ -1,11 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { en, type Key } from './en'
-import { ur } from './ur'
+import type { Key } from './en'
+import { translate, type Lang, type T } from './translate'
 
-export type Lang = 'en' | 'ur'
-const dicts = { en, ur }
-
-export type T = (key: Key, params?: Record<string, string | number>) => string
+export type { Lang, T }
+export { translate }
 
 interface I18n {
   lang: Lang
@@ -21,12 +19,6 @@ function readLang(): Lang {
   } catch {
     return 'en'
   }
-}
-
-export function translate(lang: Lang, key: Key, params?: Record<string, string | number>) {
-  let s: string = dicts[lang][key] ?? en[key] ?? key
-  if (params) for (const [k, v] of Object.entries(params)) s = s.split(`{${k}}`).join(String(v))
-  return s
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {

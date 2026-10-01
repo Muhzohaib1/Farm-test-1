@@ -73,6 +73,23 @@ After that, the app opens with the PIN and works without internet. The badge at 
 - If two phones both add a new animal while offline, they could pick the same tag. The dashboard shows a
   **"Tag used twice"** alert so one can be renamed.
 
+## Daily phone notifications
+
+Each person can turn on **More → Settings → Daily reminders** and pick a time (06:00–10:00, their own local
+time). Every morning they get a notification with the "Needs attention" list, in their chosen language.
+
+How it works: a Netlify scheduled function (`netlify/functions/daily-digest.mts`) runs every hour, finds the
+phones whose chosen hour has arrived, works out the reminders from the farm records, and sends a web push
+notification. Dates follow Pakistan time (the farm's), wherever the phone is.
+
+One-time setup:
+1. Supabase → SQL Editor: run [`supabase/notifications.sql`](supabase/notifications.sql).
+2. Supabase → Project Settings → API Keys: copy the **secret** key (`sb_secret_…`, or the legacy `service_role` key).
+3. Netlify → Project configuration → Environment variables: add `SUPABASE_SERVICE_ROLE_KEY` with that value
+   (mark it secret). This key stays on the server; it is never put into the app.
+4. Deploy. On its first run (at the top of the next hour) the function creates the notification keys; after
+   that, people can turn reminders on.
+
 ## Keeping the free database awake
 
 Free Supabase projects pause after about 7 days with no activity. A small Netlify scheduled function

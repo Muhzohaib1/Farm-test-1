@@ -12,10 +12,15 @@ export function toISO(ms: number): ISODate {
   return new Date(ms).toISOString().slice(0, 10)
 }
 
-/** Today's date in the phone's local time zone. */
-export function today(): ISODate {
-  const n = new Date()
-  return toISO(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()))
+/**
+ * The farm's time zone: Pakistan Standard Time, UTC+5 all year (no daylight
+ * saving). Family members abroad see the same "today" as the farm.
+ */
+export const FARM_UTC_OFFSET_HOURS = 5
+
+/** Today's date at the farm (Pakistan), whatever time zone the phone is in. */
+export function today(nowMs: number = Date.now()): ISODate {
+  return toISO(nowMs + FARM_UTC_OFFSET_HOURS * 3600_000)
 }
 
 export function addDays(d: ISODate, days: number): ISODate {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Animal, Base, Deworming, Famacha, Mating, Quarantine, Vaccination } from '../db/types'
 import { DEFAULT_VACCINES } from '../db/db'
-import { addDays, daysBetween, fmtDate, lastMonths } from '../lib/dates'
+import { addDays, daysBetween, fmtDate, lastMonths, today } from '../lib/dates'
 import { nextTag, nextTags, tagPrefix, tagTaken } from '../lib/tags'
 import { computeAlerts } from './alerts'
 import { checkInbreeding, dueDate, openPregnancies } from './breeding'
@@ -32,6 +32,12 @@ describe('dates', () => {
   it('adds days across months and leap years', () => {
     expect(addDays('2028-02-28', 1)).toBe('2028-02-29')
     expect(daysBetween('2026-01-01', '2026-12-31')).toBe(364)
+  })
+  it('uses Pakistan time for today, wherever the phone is', () => {
+    // 23:30 in London (BST, UTC+1) on 1 Oct = 22:30 UTC = 03:30 on 2 Oct in Pakistan
+    expect(today(Date.UTC(2026, 9, 1, 22, 30))).toBe('2026-10-02')
+    // 18:00 UTC = 23:00 in Pakistan, still the same day
+    expect(today(Date.UTC(2026, 9, 1, 18, 0))).toBe('2026-10-01')
   })
   it('lists months', () => expect(lastMonths(3, '2026-01-15')).toEqual(['2025-11', '2025-12', '2026-01']))
 })

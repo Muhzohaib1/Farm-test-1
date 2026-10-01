@@ -1,0 +1,25 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ]
+  },
+  "include": [
+    "functions",
+    "../src/logic",
+    "../src/lib/dates.ts",
+    "../src/i18n/en.ts",
+    "../src/i18n/ur.ts",
+    "../src/i18n/translate.ts",
+    "../src/db/types.ts",
+    "../src/db/defaults.ts"
+  ],
+  "exclude": [
+    "../src/**/*.test.ts"
+  ]
+}

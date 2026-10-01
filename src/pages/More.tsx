@@ -10,6 +10,7 @@ import { buildSheets, downloadCSV, downloadExcel } from '../lib/export'
 import { getConfig, saveConfig, supabase } from '../sync/supabase'
 import { syncNow, syncStore } from '../sync/sync'
 import { InstallButton, LangSwitch, SetPin } from './Auth'
+import { pushState, savedHour, turnOff, turnOn, phoneTimeZone, type PushState } from '../lib/push'
 
 export function More() {
   const { t } = useI18n()
@@ -136,6 +137,66 @@ function Users() {
   )
 }
 
+const HOURS = [6, 7, 8, 9, 10]
+const fmtHour = (h: number) => `${String(h).padStart(2, '0')}:00`
+
+function Notifications() {
+  const { t, lang } = useI18n()
+  const [state, setState] = useState<PushState | null>(null)
+  const [hour, setHour] = useState(savedHour())
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    void pushState().then(setState)
+  }, [])
+  const on = async (h: number) => {
+    setBusy(true)
+    setMsg('')
+    const r = await turnOn(h, lang)
+    setBusy(false)
+    if (r === 'ok') {
+      setState('on')
+      toast(t('notif_on_done'))
+    } else {
+      setState(await pushState())
+      setMsg(t(r === 'denied' ? 'notif_denied' : r === 'not_ready' ? 'notif_not_ready' : 'notif_failed'))
+    }
+  }
+  if (state === null) return null
+  return (
+    <Card title={`🔔 ${t('notif_title')}`}>
+      <p className="muted small">{t('notif_help')}</p>
+      {state === 'unsupported' && <p className="field-error">{t('notif_unsupported')}</p>}
+      {state === 'needs_online' && <p className="muted">{t('notif_needs_online')}</p>}
+      {state === 'denied' && <p className="field-error">{t('notif_denied')}</p>}
+      {(state === 'on' || state === 'off') && (
+        <>
+          <Field label={t('notif_time')}>
+            <Choice
+              value={hour}
+              cols={5}
+              onChange={(h) => {
+                setHour(h)
+                if (state === 'on') void on(h)
+              }}
+              options={HOURS.map((h) => ({ value: h, label: fmtHour(h) }))}
+            />
+          </Field>
+          {state === 'on' ? (
+            <>
+              <p className="ok-text">✓ {t('notif_status_on', { h: fmtHour(hour), tz: phoneTimeZone() })}</p>
+              <Btn kind="ghost" disabled={busy} onClick={async () => { await turnOff(); setState('off') }}>{t('notif_turn_off')}</Btn>
+            </>
+          ) : (
+            <Btn disabled={busy} onClick={() => void on(hour)}>🔔 {busy ? '…' : t('notif_turn_on')}</Btn>
+          )}
+        </>
+      )}
+      {msg && <p className="field-error">{msg}</p>}
+    </Card>
+  )
+}
+
 export function SettingsPage() {
   const { t } = useI18n()
   const { isOwner, profile } = useRole()
@@ -157,6 +218,7 @@ export function SettingsPage() {
         {s.lastSync && <p className="muted small">{t('last_sync', { t: new Date(s.lastSync).toLocaleString('en-GB') })}</p>}
         {online && <Btn kind="secondary" onClick={() => void syncNow()}>⟳ {t('sync_now')}</Btn>}
       </Card>
+      <Notifications />
       {isOwner && online && <Users />}
       {isOwner && !online && (
         <Card title={t('sync_settings')}>

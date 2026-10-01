@@ -4,21 +4,15 @@ import { SyncBadge } from '../components/SyncBadge'
 import { LineChart, SERIES, SplitBar } from '../components/charts'
 import { Card } from '../components/ui'
 import { useFarm } from '../data'
-import { useI18n, type Key, type T } from '../i18n'
-import { computeAlerts, type Alert } from '../logic/alerts'
+import { useI18n } from '../i18n'
+import { computeAlerts } from '../logic/alerts'
+import { alertText } from '../logic/alertText'
 import { headcount, herdOverTime, last12Months } from '../logic/stats'
 import { today } from '../lib/dates'
 import logo from '../assets/logo.png'
 
 const AGE_COLORS = ['#86b6ef', '#3987e5', '#1c5cab', '#c3c2b7'] // sequential blue (young → adult), grey = unknown
 
-export function alertText(t: T, a: Alert): string {
-  const p = { ...a.params }
-  if (a.kind === 'dewormer_repeat') p.group = t(`group_short_${p.group}` as Key)
-  let s = t(`al_${a.kind}` as Key, p)
-  if (a.kind === 'famacha_due' && Number(p.days) >= 0) s += ` — ${t('al_famacha_days', p)}`
-  return s
-}
 
 function monthLabel(i: number, months: string[]) {
   const m = months[i]

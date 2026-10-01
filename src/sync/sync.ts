@@ -1,6 +1,7 @@
 import { db, getMeta, onLocalWrite, setMeta, tbl, type OutboxEntry } from '../db/db'
 import { TABLE_NAMES, type Base, type TableName } from '../db/types'
 import { refreshRole } from '../auth/session'
+import { refreshPushPrefs } from '../lib/push'
 import { supabase } from './supabase'
 
 export type SyncState = 'local' | 'offline' | 'syncing' | 'ok' | 'error'
@@ -126,6 +127,14 @@ async function pull() {
   }
 }
 
+function readLang(): 'en' | 'ur' {
+  try {
+    return localStorage.getItem('lang') === 'ur' ? 'ur' : 'en'
+  } catch {
+    return 'en'
+  }
+}
+
 let running: Promise<void> | null = null
 
 export function syncNow(): Promise<void> {
@@ -142,6 +151,7 @@ export function syncNow(): Promise<void> {
       await push()
       await pull()
       await refreshRole()
+      await refreshPushPrefs(readLang()).catch(() => undefined)
       set({ state: 'ok', lastSync: Date.now() })
     } catch (e) {
       console.warn('sync failed', e)

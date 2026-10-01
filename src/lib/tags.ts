@@ -1,4 +1,5 @@
 import type { Animal, ISODate, Sex, Species } from '../db/types'
+import { today } from './dates'
 
 /**
  * Tag scheme:
@@ -9,7 +10,7 @@ import type { Animal, ISODate, Sex, Species } from '../db/types'
  */
 export function tagPrefix(opts: { species: Species; sex: Sex; newborn: boolean; date?: ISODate }): string {
   if (opts.newborn) {
-    const yy = (opts.date ?? new Date().toISOString()).slice(2, 4)
+    const yy = (opts.date ?? today()).slice(2, 4)
     return `${opts.species === 'goat' ? 'K' : 'L'}${yy}-`
   }
   return opts.sex === 'F' ? 'D-' : 'B-'
