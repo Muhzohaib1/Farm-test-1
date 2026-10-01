@@ -3,10 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AnimalBadge, AnimalPicker, Btn, Card, Choice, DateField, Empty, Field, HerdPicker, NumIn, Page, TextArea, TextIn, Toggle, Warning, toast, toNum } from '../components/ui'
 import { useFarm } from '../data'
 import { add, remove, update } from '../db/db'
-import { DRUG_GROUPS, type DrugGroup, type Famacha, type Species, type VaccineType } from '../db/types'
+import { DRUG_GROUPS, type Animal, type DrugGroup, type Famacha, type Species, type VaccineType } from '../db/types'
 import { useI18n, type Key } from '../i18n'
 import { ageDays } from '../logic/data'
-import { appliesTo, flaggedAnimals, lastFamacha, repeatedGroup } from '../logic/health'
+import { appliesTo, famachaAdvice, famachaRecheck, flaggedAnimals, lastFamacha, lastGroup, repeatedGroup, riskReason } from '../logic/health'
 import { addDays, fmtDate, today } from '../lib/dates'
 import { fmtPKR } from '../lib/format'
 import { compareTags } from '../lib/tags'
@@ -71,7 +71,10 @@ export function DewormForm() {
   const editing = useEditing('dewormings')
   const saved = useSaved()
   const flaggedParam = useParam('flagged')
-  const flagged = useMemo(() => flaggedAnimals(data.animals, data.famacha, data.dewormings).map((f) => f.animal.id), [data])
+  const flagged = useMemo(
+    () => flaggedAnimals(data.animals, data.famacha, data.dewormings, (a) => riskReason(a, data.matings, data.births, today())).map((f) => f.animal.id),
+    [data],
+  )
   const [date, setDate] = useState(editing?.date ?? today())
   const [product, setProduct] = useState(editing?.product ?? '')
   const [group, setGroup] = useState<DrugGroup | undefined>(editing?.group)
@@ -139,38 +142,99 @@ export function DewormForm() {
 
 const FAMACHA_COLORS = ['#c0262d', '#e0606a', '#f2a7b0', '#f7d9dc', '#ffffff']
 
-export function FamachaRound() {
+/** What to do for one eyelid score, written for the person at the farm. */
+export function FamachaAdviceCard({ animal, score }: { animal: Animal; score: Famacha['score'] }) {
   const { t } = useI18n()
+  const data = useFarm()
+  const now = today()
+  const risk = score === 3 ? riskReason(animal, data.matings, data.births, now) : undefined
+  const advice = famachaAdvice(score, risk)
+  const prevGroup = lastGroup(data.dewormings)
+  const steps: string[] = []
+  if (advice.deworm) {
+    steps.push(t('fa_do_deworm'))
+    steps.push(prevGroup ? t('fa_do_group', { g: t(`group_short_${prevGroup}` as Key) }) : t('fa_do_group_any'))
+  }
+  if (advice.level === 'urgent') steps.push(t('fa_do_vet'), t('fa_do_handle'))
+  if (advice.level !== 'ok') steps.push(t('fa_do_feed'), t('fa_do_bottlejaw'))
+  if (advice.recheckDays) steps.push(t('fa_do_recheck', { n: advice.recheckDays }))
+  if (score >= 4) steps.push(t('fa_do_fluke'))
+  return (
+    <div className={`advice advice-${advice.level}`} role="status">
+      <div className="advice-head">
+        <span className="advice-score" style={{ background: FAMACHA_COLORS[score - 1] }}>{score}</span>
+        <div>
+          <b>{animal.tag} — {t(`fa_title_${advice.level}`)}</b>
+          {risk && <span className="sub">{t(`risk_${risk}`)}: {t('fa_risk_note')}</span>}
+        </div>
+      </div>
+      {steps.length > 0 && (
+        <ul className="advice-steps">
+          {steps.map((x) => <li key={x}>{x}</li>)}
+        </ul>
+      )}
+      {advice.level !== 'ok' && <p className="muted small">{t('fa_vet_note')}</p>}
+    </div>
+  )
+}
+
+export function FamachaRound() {
+  const { t, lang } = useI18n()
+  const fwd = lang === 'ur' ? '←' : '→'
   const data = useFarm()
   const nav = useNavigate()
   const present = usePresent()
   const now = today()
   const single = useParam('animal')
+  const recheckOnly = useParam('recheck')
   const queue = useMemo(
     () =>
-      present
+      (recheckOnly ? famachaRecheck(data.animals, data.famacha, now) : present)
         .filter((a) => (single ? a.id === single : (ageDays(a, now) ?? 999) >= 30))
         .sort((a, b) => compareTags(a.tag, b.tag)),
     [], // order stays fixed for the whole round
   )
   const [i, setI] = useState(0)
   const [results, setResults] = useState<Record<string, Famacha['score']>>({})
+  const [showing, setShowing] = useState<Famacha['score'] | null>(null)
   const last = lastFamacha(data.famacha)
   const a = queue[i]
 
   const score = async (s: Famacha['score']) => {
     await add('famacha', { animalId: a.id, date: now, score: s })
     setResults((r) => ({ ...r, [a.id]: s }))
+    if (s >= 3) setShowing(s)
+    else {
+      toast(`${a.tag}: ${s} ✓`)
+      setI((x) => x + 1)
+    }
+  }
+  const next = () => {
+    setShowing(null)
     setI((x) => x + 1)
   }
 
   if (!a) {
     const n = Object.keys(results).length
-    const f = Object.values(results).filter((s) => s >= 4).length
+    const toTreat = flaggedAnimals(data.animals, data.famacha, data.dewormings, (x) => riskReason(x, data.matings, data.births, now))
+      .filter((f) => f.animal.id in results)
     return (
       <Page title={t('famacha_round')}>
-        <div className="big-message">✓ {t('round_done', { n, f })}</div>
-        {f > 0 && <Link to="/health/deworm?flagged=1" className="btn btn-danger btn-block">💊 {t('al_flagged', { n: f })}</Link>}
+        <div className="big-message">✓ {t('round_done', { n, f: toTreat.length })}</div>
+        {toTreat.length > 0 && (
+          <>
+            <Card title={t('fa_to_deworm')}>
+              <div className="list">
+                {toTreat.map((f) => (
+                  <Link key={f.animal.id} to={`/animal/${f.animal.id}`} className="list-row">
+                    <AnimalBadge a={f.animal} sub={`${t('famacha')}: ${f.check.score} — ${t(`famacha_${f.check.score}`)}`} />
+                  </Link>
+                ))}
+              </div>
+            </Card>
+            <Link to="/health/deworm?flagged=1" className="btn btn-danger btn-block">💊 {t('fa_record_deworm', { n: toTreat.length })}</Link>
+          </>
+        )}
         <Btn kind="secondary" onClick={() => nav('/')}>{t('nav_home')}</Btn>
       </Page>
     )
@@ -179,24 +243,34 @@ export function FamachaRound() {
   const prev = last.get(a.id)
   return (
     <Page title={`${t('famacha_round')} ${i + 1}/${queue.length}`}>
-      <p className="muted">{t('famacha_help')}</p>
+      {showing === null && <p className="muted">{t('famacha_help')}</p>}
       <div className="famacha-animal">
         <AnimalBadge a={a} />
-        {prev && <span className="muted small">{t('last_check')}: {prev.score} · {fmtDate(prev.date)}</span>}
+        {prev && showing === null && <span className="muted small">{t('last_check')}: {prev.score} · {fmtDate(prev.date)}</span>}
       </div>
-      <div className="famacha-scale">
-        {([1, 2, 3, 4, 5] as const).map((s) => (
-          <button key={s} className="famacha-btn" style={{ background: FAMACHA_COLORS[s - 1], color: s <= 2 ? '#fff' : '#222' }} onClick={() => void score(s)}>
-            <span className="famacha-num">{s}</span>
-            <span>{t(`famacha_${s}`)}</span>
-          </button>
-        ))}
-      </div>
-      <p className="muted small">{t('famacha_flag')}</p>
-      <div className="row-actions">
-        <Btn kind="secondary" block={false} onClick={() => setI((x) => x + 1)}>{t('skip')} →</Btn>
-        <Btn kind="ghost" block={false} onClick={() => setI(queue.length)}>{t('finish')}</Btn>
-      </div>
+      {showing !== null ? (
+        <>
+          <FamachaAdviceCard animal={a} score={showing} />
+          <p className="muted small">{t('fa_deworm_later')}</p>
+          <Btn onClick={next}>{i + 1 < queue.length ? `${t('next')} ${fwd}` : t('finish')}</Btn>
+        </>
+      ) : (
+        <>
+          <div className="famacha-scale">
+            {([1, 2, 3, 4, 5] as const).map((s) => (
+              <button key={s} className="famacha-btn" style={{ background: FAMACHA_COLORS[s - 1], color: s <= 2 ? '#fff' : '#222' }} onClick={() => void score(s)}>
+                <span className="famacha-num">{s}</span>
+                <span>{t(`famacha_${s}`)}</span>
+              </button>
+            ))}
+          </div>
+          <p className="muted small">{t('famacha_flag')}</p>
+          <div className="row-actions">
+            <Btn kind="secondary" block={false} onClick={() => setI((x) => x + 1)}>{t('skip')} {fwd}</Btn>
+            <Btn kind="ghost" block={false} onClick={() => setI(queue.length)}>{t('finish')}</Btn>
+          </div>
+        </>
+      )}
     </Page>
   )
 }

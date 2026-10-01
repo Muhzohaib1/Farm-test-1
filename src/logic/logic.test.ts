@@ -7,7 +7,7 @@ import { computeAlerts } from './alerts'
 import { checkInbreeding, dueDate, openPregnancies } from './breeding'
 import { buildData, type RawData } from './data'
 import { ledger, summarise } from './finance'
-import { famachaDue, flaggedAnimals, repeatedGroup, vaccinesDue } from './health'
+import { famachaAdvice, famachaDue, famachaRecheck, flaggedAnimals, repeatedGroup, riskReason, vaccinesDue } from './health'
 import { quarantineState } from './quarantine'
 import { headcount, herdOverTime, last12Months } from './stats'
 
@@ -147,6 +147,42 @@ describe('health', () => {
     const a = animal({ dob: '2025-01-01' })
     expect(famachaDue([a], [{ ...base(), animalId: a.id, date: addDays(NOW, -10), score: 2 }], NOW)).toHaveLength(0)
     expect(famachaDue([a], [{ ...base(), animalId: a.id, date: addDays(NOW, -15), score: 2 }], NOW)).toHaveLength(1)
+  })
+})
+
+describe('eyelid check advice', () => {
+  it('maps scores to actions', () => {
+    expect(famachaAdvice(1)).toMatchObject({ level: 'ok', deworm: false })
+    expect(famachaAdvice(2)).toMatchObject({ level: 'ok', deworm: false })
+    expect(famachaAdvice(3)).toMatchObject({ level: 'watch', deworm: false, recheckDays: 7 })
+    expect(famachaAdvice(3, 'pregnant')).toMatchObject({ level: 'treat', deworm: true })
+    expect(famachaAdvice(4)).toMatchObject({ level: 'treat', deworm: true, vet: false })
+    expect(famachaAdvice(5)).toMatchObject({ level: 'urgent', deworm: true, vet: true })
+  })
+  it('finds risk groups', () => {
+    const kid = animal({ dob: addDays(NOW, -60) })
+    const doe = animal({ dob: '2022-01-01' })
+    const plain = animal({ dob: '2022-01-01' })
+    const nursing = animal({ dob: '2022-01-01' })
+    const m: Mating = { ...base(), femaleId: doe.id, maleId: 'x', date: addDays(NOW, -40), dueDate: addDays(NOW, 110) }
+    const b = { ...base(), motherId: nursing.id, date: addDays(NOW, -20), kids: [] }
+    expect(riskReason(kid, [], [], NOW)).toBe('young')
+    expect(riskReason(doe, [m], [], NOW)).toBe('pregnant')
+    expect(riskReason(nursing, [], [b], NOW)).toBe('nursing')
+    expect(riskReason(plain, [m], [], NOW)).toBeUndefined()
+  })
+  it('flags score 3 only for animals at risk', () => {
+    const a = animal({})
+    const f: Famacha = { ...base(), animalId: a.id, date: NOW, score: 3 }
+    expect(flaggedAnimals([a], [f], [])).toHaveLength(0)
+    expect(flaggedAnimals([a], [f], [], () => 'young')).toHaveLength(1)
+  })
+  it('asks for a recheck a week after a pale score', () => {
+    const a = animal({})
+    const pale = (days: number, score: Famacha['score']): Famacha => ({ ...base(), animalId: a.id, date: addDays(NOW, -days), score })
+    expect(famachaRecheck([a], [pale(8, 4)], NOW)).toHaveLength(1)
+    expect(famachaRecheck([a], [pale(3, 4)], NOW)).toHaveLength(0)
+    expect(famachaRecheck([a], [pale(8, 2)], NOW)).toHaveLength(0)
   })
 })
 

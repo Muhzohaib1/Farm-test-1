@@ -1175,3 +1175,51 @@ textarea.input {
   line-height: 1.25;
   max-width: 48%;
 }
+
+/* ---------- eyelid check advice ---------- */
+.advice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+.advice-ok {
+  border-color: var(--brand-2);
+  background: var(--brand-soft);
+}
+.advice-watch {
+  border-color: #d69e2e;
+  background: var(--amber-soft);
+}
+.advice-treat,
+.advice-urgent {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+.advice-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.advice-score {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid #d9c7c9;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #222;
+}
+.advice-steps {
+  margin: 0;
+  padding-inline-start: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

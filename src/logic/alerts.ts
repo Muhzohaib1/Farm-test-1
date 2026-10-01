@@ -3,7 +3,7 @@ import { daysBetween } from '../lib/dates'
 import { compareTags, normTag } from '../lib/tags'
 import { MALE_REPLACE_DAYS, breedingStart, openPregnancies } from './breeding'
 import { ageDays, isPresent, type FarmData } from './data'
-import { FAMACHA_DUE_DAYS, famachaDue, flaggedAnimals, repeatedGroup, vaccinesDue } from './health'
+import { FAMACHA_DUE_DAYS, famachaDue, famachaRecheck, flaggedAnimals, repeatedGroup, riskReason, vaccinesDue } from './health'
 import { quarantineState } from './quarantine'
 
 export type Level = 'red' | 'amber' | 'green'
@@ -18,6 +18,7 @@ export interface Alert {
   kind:
     | 'vaccine_due'
     | 'famacha_due'
+    | 'famacha_recheck'
     | 'quarantine'
     | 'quarantine_ready'
     | 'flagged'
@@ -57,7 +58,7 @@ export function computeAlerts(data: FarmData, now: ISODate): Alert[] {
   }
 
   // Flagged by eyelid check
-  const flagged = flaggedAnimals(data.animals, data.famacha, data.dewormings)
+  const flagged = flaggedAnimals(data.animals, data.famacha, data.dewormings, (a) => riskReason(a, data.matings, data.births, now))
   if (flagged.length) {
     out.push({
       id: 'flagged', level: 'red', kind: 'flagged', params: { n: flagged.length },
@@ -96,6 +97,15 @@ export function computeAlerts(data: FarmData, now: ISODate): Alert[] {
     out.push({
       id: 'famacha', level: worst ? 'red' : 'amber', kind: 'famacha_due',
       params: { n: fd.length, days: known.length ? Math.max(...known) : -1 }, link: '/health/famacha',
+    })
+  }
+
+  // Pale eyelids last time: look again about a week later
+  const recheck = famachaRecheck(data.animals, data.famacha, now)
+  if (recheck.length) {
+    out.push({
+      id: 'famacha-recheck', level: 'amber', kind: 'famacha_recheck', params: { n: recheck.length },
+      tags: tagsOf(recheck), link: '/health/famacha?recheck=1',
     })
   }
 
