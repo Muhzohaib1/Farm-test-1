@@ -81,6 +81,15 @@ export function Toast() {
 
 /* ---------- form fields ---------- */
 
+/** A field label with a red star, for fields that must be filled before saving. */
+export function Req({ children }: { children: ReactNode }) {
+  return (
+    <>
+      {children} <span className="req" aria-label="required">✱</span>
+    </>
+  )
+}
+
 export function Field({ label, children, hint, error }: { label: ReactNode; children: ReactNode; hint?: ReactNode; error?: ReactNode }) {
   return (
     <label className="field">

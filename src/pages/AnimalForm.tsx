@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { AnimalPicker, Btn, Choice, DateField, Field, NumIn, Page, TextArea, TextIn, Toggle, toast, toNum } from '../components/ui'
+import { AnimalPicker, Choice, DateField, Field, NumIn, Page, Req, TextArea, TextIn, Toggle, toast, toNum } from '../components/ui'
 import { useFarm, usePhoto } from '../data'
 import { add, batch, tbl, update } from '../db/db'
 import { BREEDS, type Animal, type AnimalStatus, type Breed, type Sex, type Source, type Species } from '../db/types'
@@ -77,8 +77,15 @@ export function AnimalForm() {
     if (f) setPhoto(await compressImage(f))
   }
 
+  const missing = [
+    !tag && t('tag'),
+    !dob && t('dob'),
+    source === 'bought' && !purchaseDate && t('purchase_date'),
+    source === 'bought' && !toNum(price) && t('purchase_price'),
+  ].filter((x): x is string => !!x)
+
   const save = async () => {
-    if (!tag || taken) return
+    if (!tag || taken || missing.length) return
     setBusy(true)
     const fields: Omit<Animal, 'id' | 'createdAt' | 'updatedAt'> = {
       tag: normTag(tag),
@@ -132,19 +139,20 @@ export function AnimalForm() {
       <Field label={t('source')}>
         <Choice value={source} onChange={setSource} options={[{ value: 'born', label: t('source_born') }, { value: 'bought', label: t('source_bought') }]} />
       </Field>
-      <Field label={t('tag')} hint={!editing && !tagInput ? t('tag_suggested') : undefined} error={taken ? t('tag_taken') : undefined}>
+      <Field label={<Req>{t('tag')}</Req>} hint={!editing && !tagInput ? t('tag_suggested') : undefined} error={taken ? t('tag_taken') : undefined}>
         <TextIn value={tag} onChange={(v) => setTagInput(normTag(v))} />
       </Field>
       <Field label={t('breed')}>
         <Choice value={breed} onChange={setBreed} cols={3} options={BREEDS.map((b) => ({ value: b, label: t(`breed_${b}`) }))} />
       </Field>
-      <DateField label={t('dob')} value={dob} onChange={setDob} max={now} />
+      <DateField label={<Req>{t('dob')}</Req>} value={dob} onChange={setDob} max={now} />
       <Toggle checked={dobApprox} onChange={setDobApprox} label={t('dob_approx')} />
+      {!dob && <p className="muted small">{t('dob_hint')}</p>}
 
       {source === 'bought' && (
         <>
-          <DateField label={t('purchase_date')} value={purchaseDate} onChange={setPurchaseDate} max={now} />
-          <Field label={t('purchase_price')}>
+          <DateField label={<Req>{t('purchase_date')}</Req>} value={purchaseDate} onChange={setPurchaseDate} max={now} />
+          <Field label={<Req>{t('purchase_price')}</Req>}>
             <NumIn value={price} onChange={setPrice} />
           </Field>
           {!editing && <p className="muted small">{t('quarantine_bought_note')}</p>}
@@ -181,13 +189,7 @@ export function AnimalForm() {
         <TextArea value={notes} onChange={setNotes} />
       </Field>
 
-      {editing ? (
-        <FormActions onSave={save} canSave={!taken && !!tag} editing={editing} table="animals" busy={busy} />
-      ) : (
-        <div className="form-actions">
-          <Btn onClick={save} disabled={taken || !tag || busy}>✓ {t('save')}</Btn>
-        </div>
-      )}
+      <FormActions onSave={save} canSave={!taken} missing={missing} editing={editing} table="animals" busy={busy} />
     </Page>
   )
 }

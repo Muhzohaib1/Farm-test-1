@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AnimalBadge, AnimalPicker, Btn, Card, Choice, DateField, Empty, Field, Page, TextArea, TextIn, Toggle, Warning, toast } from '../components/ui'
+import { AnimalBadge, AnimalPicker, Btn, Card, Choice, DateField, Empty, Field, Page, Req, TextArea, TextIn, Toggle, Warning, toast } from '../components/ui'
 import { useFarm } from '../data'
 import { add, batch, update } from '../db/db'
 import { BREEDS, type Breed, type Kid, type Sex } from '../db/types'
@@ -91,9 +91,9 @@ export function MatingForm() {
 
   return (
     <Page title={t('mating')}>
-      <AnimalPicker label={t('female_animal')} animals={females} value={femaleId} onChange={setFemaleId} />
-      <AnimalPicker label={t('male_animal')} animals={males} value={maleId} onChange={setMaleId} />
-      <DateField label={t('mating_date')} value={date} onChange={setDate} max={today()} />
+      <AnimalPicker label={<Req>{t('female_animal')}</Req>} animals={females} value={femaleId} onChange={setFemaleId} />
+      <AnimalPicker label={<Req>{t('male_animal')}</Req>} animals={males} value={maleId} onChange={setMaleId} />
+      <DateField label={<Req>{t('mating_date')}</Req>} value={date} onChange={setDate} max={today()} />
       {female && due && (
         <div className="info-box">
           📅 {t('due_calc', { d: fmtDate(due), n: GESTATION_DAYS[female.species], s: t(female.species) })}
@@ -122,7 +122,13 @@ export function MatingForm() {
         </Warning>
       )}
       {editing && <Toggle checked={failed} onChange={setFailed} label={t('mating_failed')} />}
-      <FormActions onSave={save} canSave={canSave} editing={editing} table="matings" />
+      <FormActions
+        onSave={save}
+        canSave={canSave}
+        missing={[!female && t('female_animal'), !male && t('male_animal'), !!check?.blocked && override && !reason.trim() && t('inbreed_override_reason')].filter((x): x is string => !!x)}
+        editing={editing}
+        table="matings"
+      />
     </Page>
   )
 }
@@ -219,10 +225,10 @@ export function BirthForm() {
 
   return (
     <Page title={t('birth')}>
-      <AnimalPicker label={t('mother')} animals={females} value={motherId} onChange={setMotherId} />
+      <AnimalPicker label={<Req>{t('mother')}</Req>} animals={females} value={motherId} onChange={setMotherId} />
       <AnimalPicker label={t('father')} animals={males} value={fatherId} onChange={(v) => setFatherSel(v)} allowNone />
       {fatherSel === null && lastMating && <p className="muted small">{t('father_from_mating')} ({fmtDate(lastMating.date)})</p>}
-      <DateField label={t('birth_date')} value={date} onChange={setDate} max={now} />
+      <DateField label={<Req>{t('birth_date')}</Req>} value={date} onChange={setDate} max={now} />
       <Field label={t('born_alive')}>
         <Choice value={alive} onChange={setAlive} cols={5} options={[0, 1, 2, 3, 4].map((n) => ({ value: n, label: String(n) }))} />
       </Field>
@@ -238,7 +244,7 @@ export function BirthForm() {
               onChange={(s) => setSexes((xs) => xs.map((x, j) => (j === i ? s : x)))}
               options={[{ value: 'F', label: `♀ ${kidWord('F')}` }, { value: 'M', label: `♂ ${kidWord('M')}` }]}
             />
-            <Field label={t('new_tag')} error={k.tag && tagTaken(k.tag, data.allAnimals) ? t('tag_taken') : undefined}>
+            <Field label={<Req>{t('new_tag')}</Req>} error={k.tag && tagTaken(k.tag, data.allAnimals) ? t('tag_taken') : undefined}>
               <TextIn value={k.tag} onChange={(v) => setTagEdits((e) => ({ ...e, [i]: normTag(v) }))} />
             </Field>
           </Card>
@@ -259,7 +265,11 @@ export function BirthForm() {
         </Field>
       )}
       <Field label={t('notes')}><TextArea value={notes} onChange={setNotes} /></Field>
-      <FormActions onSave={save} canSave={!!mother && alive + dead > 0 && !badTag && !dupInForm} />
+      <FormActions
+        onSave={save}
+        canSave={!badTag && !dupInForm}
+        missing={[!mother && t('mother'), alive + dead === 0 && t('born_alive'), !!mother && kids.some((k) => !k.tag) && t('new_tag')].filter((x): x is string => !!x)}
+      />
     </Page>
   )
 }

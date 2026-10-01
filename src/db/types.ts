@@ -177,6 +177,7 @@ export interface Expense extends Base {
   category: ExpenseCategory
   amount: number
   note?: string
+  hasPhoto?: boolean // invoice photo stored in `photos` under the same id
 }
 
 export interface Tables {

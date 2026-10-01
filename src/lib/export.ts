@@ -91,8 +91,8 @@ export function buildSheets(data: FarmData): Sheet[] {
     },
     {
       name: 'Expenses',
-      headers: ['Date', 'Category', 'Amount (PKR)', 'Note'],
-      rows: byDate(data.expenses).map((x) => [d(x.date), x.category, x.amount, x.note]),
+      headers: ['Date', 'Category', 'Amount (PKR)', 'Note', 'Invoice photo in app'],
+      rows: byDate(data.expenses).map((x) => [d(x.date), x.category, x.amount, x.note, x.hasPhoto ? 'yes' : '']),
     },
     {
       name: 'Tag replacements',

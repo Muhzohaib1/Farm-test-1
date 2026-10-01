@@ -30,7 +30,7 @@ export function Money() {
 
   const recent = [
     ...data.sales.map((s) => ({ id: s.id, date: s.date, text: `💰 ${data.animalsById.get(s.animalId)?.tag ?? '?'} · ${t(`reason_${s.reason}`)}`, amount: s.price, income: true, link: `/sale?id=${s.id}` })),
-    ...data.expenses.map((x) => ({ id: x.id, date: x.date, text: `🧾 ${t(`cat_${x.category}`)}${x.note ? ` · ${x.note}` : ''}`, amount: x.amount, income: false, link: `/expense?id=${x.id}` })),
+    ...data.expenses.map((x) => ({ id: x.id, date: x.date, text: `🧾 ${t(`cat_${x.category}`)}${x.note ? ` · ${x.note}` : ''}${x.hasPhoto ? ' 📎' : ''}`, amount: x.amount, income: false, link: `/expense?id=${x.id}` })),
   ]
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 30)

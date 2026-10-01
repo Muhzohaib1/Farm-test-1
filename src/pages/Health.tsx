@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AnimalBadge, AnimalPicker, Btn, Card, Choice, DateField, Empty, Field, HerdPicker, NumIn, Page, TextArea, TextIn, Toggle, Warning, toast, toNum } from '../components/ui'
+import { AnimalBadge, AnimalPicker, Btn, Card, Choice, DateField, Empty, Field, HerdPicker, NumIn, Page, Req, TextArea, TextIn, Toggle, Warning, toast, toNum } from '../components/ui'
 import { useFarm } from '../data'
 import { add, remove, update } from '../db/db'
 import { DRUG_GROUPS, type Animal, type DrugGroup, type Famacha, type Species, type VaccineType } from '../db/types'
@@ -110,7 +110,7 @@ export function DewormForm() {
         </Card>
       )}
       <DateField label={t('date')} value={date} onChange={setDate} max={today()} />
-      <Field label={t('product')}>
+      <Field label={<Req>{t('product')}</Req>}>
         <TextIn value={product} onChange={setProduct} />
         {products.length > 0 && (
           <div className="chips">
@@ -124,18 +124,23 @@ export function DewormForm() {
           </div>
         )}
       </Field>
-      <Field label={t('drug_group')}>
+      <Field label={<Req>{t('drug_group')}</Req>}>
         <Choice value={group} onChange={setGroup} cols={1} options={DRUG_GROUPS.map((g) => ({ value: g, label: t(`group_${g}` as Key) }))} />
       </Field>
       {warn && <Warning>{t('deworm_repeat_warn', { g: t(`group_short_${warn}` as Key) })}</Warning>}
-      <Field label={t('dose')}>
+      <Field label={<Req>{t('dose')}</Req>}>
         <TextIn value={dose} onChange={setDose} placeholder={t('dose_hint')} />
       </Field>
       <HerdPicker animals={herd} whole={whole} onWhole={setWhole} selected={ids} onSelected={setIds} />
       <Field label={`${t('cost')} (${t('optional')})`}>
         <NumIn value={cost} onChange={setCost} />
       </Field>
-      <FormActions onSave={save} canSave={!!product.trim() && !!group && animalIds.length > 0} editing={editing} table="dewormings" />
+      <FormActions
+        onSave={save}
+        missing={[!product.trim() && t('product'), !group && t('drug_group'), !dose.trim() && t('dose'), !animalIds.length && t('select_animals')].filter((x): x is string => !!x)}
+        editing={editing}
+        table="dewormings"
+      />
     </Page>
   )
 }
@@ -301,7 +306,7 @@ export function VaccinationForm() {
 
   return (
     <Page title={t('vaccination')}>
-      <Field label={t('vaccine')}>
+      <Field label={<Req>{t('vaccine')}</Req>}>
         <Choice
           value={typeId}
           onChange={setTypeId}
@@ -320,7 +325,7 @@ export function VaccinationForm() {
       <Field label={`${t('cost')} (${t('optional')})`}>
         <NumIn value={cost} onChange={setCost} />
       </Field>
-      <FormActions onSave={save} canSave={!!type && animalIds.length > 0} editing={editing} table="vaccinations" />
+      <FormActions onSave={save} missing={[!type && t('vaccine'), !animalIds.length && t('select_animals')].filter((x): x is string => !!x)} editing={editing} table="vaccinations" />
     </Page>
   )
 }
@@ -416,9 +421,9 @@ export function TreatmentForm() {
 
   return (
     <Page title={t('treatment')}>
-      <AnimalPicker label={t('select_animal')} animals={animals} value={animalId} onChange={setAnimalId} />
+      <AnimalPicker label={<Req>{t('select_animal')}</Req>} animals={animals} value={animalId} onChange={setAnimalId} />
       <DateField label={t('date')} value={date} onChange={setDate} max={today()} />
-      <Field label={t('symptoms')}>
+      <Field label={<Req>{t('symptoms')}</Req>}>
         <div className="chips wrap">
           {SYMPTOMS.map((s) => (
             <button type="button" key={s} className={`chip${picked.includes(s) ? ' on' : ''}`} onClick={() => setPicked((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]))}>
@@ -433,7 +438,7 @@ export function TreatmentForm() {
       <Field label={t('cost')}><NumIn value={cost} onChange={setCost} /></Field>
       {cost && <p className="muted small">{fmtPKR(toNum(cost))} → {vet ? t('cat_vet') : t('cat_medicine')}</p>}
       <Field label={t('notes')}><TextArea value={notes} onChange={setNotes} /></Field>
-      <FormActions onSave={save} canSave={!!animalId && !!allSymptoms} editing={editing} table="treatments" />
+      <FormActions onSave={save} missing={[!animalId && t('select_animal'), !allSymptoms && t('symptoms')].filter((x): x is string => !!x)} editing={editing} table="treatments" />
     </Page>
   )
 }

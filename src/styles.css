@@ -1223,3 +1223,52 @@ textarea.input {
   flex-direction: column;
   gap: 6px;
 }
+
+/* ---------- required fields ---------- */
+.req {
+  color: var(--red);
+  font-size: 0.8em;
+}
+.missing {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--amber-soft);
+  color: #4a3200;
+  font-weight: 600;
+}
+
+/* ---------- invoice photo ---------- */
+.invoice-thumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: start;
+}
+.invoice-thumb img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  border: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.92);
+  overflow: auto;
+  cursor: zoom-out;
+}
+.photo-viewer img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}

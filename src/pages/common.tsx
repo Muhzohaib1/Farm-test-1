@@ -27,14 +27,24 @@ export function usePresent() {
 
 /** Save + (when editing) Delete buttons. */
 export function FormActions({
-  onSave, canSave = true, editing, table, busy, onDeleted,
-}: { onSave: () => void; canSave?: boolean; editing?: Base; table?: TableName; busy?: boolean; onDeleted?: () => Promise<unknown> }) {
+  onSave, canSave = true, missing = [], editing, table, busy, onDeleted,
+}: {
+  onSave: () => void
+  canSave?: boolean
+  /** Names of required fields that are still empty; Save stays off and they are listed. */
+  missing?: string[]
+  editing?: Base
+  table?: TableName
+  busy?: boolean
+  onDeleted?: () => Promise<unknown>
+}) {
   const { t } = useI18n()
   const { canDelete } = useRole()
   const nav = useNavigate()
   return (
     <div className="form-actions">
-      <Btn onClick={onSave} disabled={!canSave || busy}>
+      {missing.length > 0 && <p className="missing">✱ {t('fill_in', { list: missing.join(', ') })}</p>}
+      <Btn onClick={onSave} disabled={!canSave || missing.length > 0 || busy}>
         ✓ {t('save')}
       </Btn>
       {editing && table && canDelete(editing) && (
