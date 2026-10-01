@@ -365,6 +365,13 @@ export const ur: Dict = {
   al_separate_males: '{n} نر بچوں کو ماداؤں سے الگ کریں',
   al_dewormer_repeat: 'ایک ہی دوا گروپ ({group}) مسلسل 3 بار استعمال ہوا',
   al_duplicate_tag: 'ٹیگ {tag} دو بار درج ہے — ایک کو درست کریں',
+  al_ready_breed: '{n} مادہ جانور ملاپ کے لیے تیار',
+  al_ready_sell: '{n} نر فروخت کے لیے تیار',
+  al_eid_sell: 'عید الاضحیٰ تقریباً {days} دن میں: {n} نر فروخت کے لیے تیار',
+  filter_breed: 'ملاپ کے لیے تیار',
+  filter_sell: 'فروخت کے لیے تیار',
+  ready_breed: 'ملاپ کے لیے تیار',
+  ready_sell: 'فروخت کے لیے تیار',
 
   more_title: 'مزید',
   install_app: 'ایپ اس فون پر انسٹال کریں',

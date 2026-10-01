@@ -4,13 +4,14 @@ import { AnimalBadge, Empty, Page } from '../components/ui'
 import { useFarm } from '../data'
 import { useI18n } from '../i18n'
 import { malesToSeparate } from '../logic/alerts'
+import { readyForBreeding, readyToSell } from '../logic/readiness'
 import { isPresent } from '../logic/data'
 import { today } from '../lib/dates'
 import { fmtAge } from '../lib/format'
 import { compareTags } from '../lib/tags'
 import type { Species } from '../db/types'
 
-type Filter = 'present' | 'gone' | 'separate'
+type Filter = 'present' | 'gone' | 'separate' | 'breed' | 'sell'
 
 export function Animals() {
   const { t } = useI18n()
@@ -31,6 +32,8 @@ export function Animals() {
   const list = useMemo(() => {
     const base =
       filter === 'separate' ? malesToSeparate(data, now)
+      : filter === 'breed' ? readyForBreeding(data, now)
+      : filter === 'sell' ? readyToSell(data, now)
       : filter === 'gone' ? data.animals.filter((a) => !isPresent(a))
       : data.animals.filter(isPresent)
     const s = q.trim().toUpperCase()
@@ -47,7 +50,7 @@ export function Animals() {
     >
       <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="chips scroll">
-        {(['present', 'gone', 'separate'] as Filter[]).map((f) => (
+        {(['present', 'breed', 'sell', 'separate', 'gone'] as Filter[]).map((f) => (
           <button key={f} className={`chip${filter === f ? ' on' : ''}`} onClick={() => setParam('filter', f === 'present' ? undefined : f)}>
             {t(`filter_${f}`)}
           </button>

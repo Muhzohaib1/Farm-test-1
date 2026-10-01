@@ -375,6 +375,13 @@ export const en = {
   al_separate_males: 'Separate {n} young males from females',
   al_dewormer_repeat: 'Same dewormer group ({group}) used 3 times in a row',
   al_duplicate_tag: 'Tag {tag} is used twice — edit one',
+  al_ready_breed: '{n} females ready for breeding',
+  al_ready_sell: '{n} males ready to sell',
+  al_eid_sell: 'Eid ul-Adha in about {days} days: {n} males ready to sell',
+  filter_breed: 'Ready to breed',
+  filter_sell: 'Ready to sell',
+  ready_breed: 'Ready for breeding',
+  ready_sell: 'Ready to sell',
 
   // more / settings
   more_title: 'More',

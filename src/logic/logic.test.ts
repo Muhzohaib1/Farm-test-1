@@ -10,6 +10,7 @@ import { ledger, summarise } from './finance'
 import { famachaAdvice, famachaDue, famachaRecheck, flaggedAnimals, repeatedGroup, riskReason, vaccinesDue } from './health'
 import { quarantineState } from './quarantine'
 import { headcount, herdOverTime, last12Months } from './stats'
+import { eidSoon, readyForBreeding, readyToSell } from './readiness'
 
 const NOW = '2026-09-27'
 let n = 0
@@ -230,6 +231,43 @@ describe('alerts', () => {
     const m: Mating = { ...base(), femaleId: f.id, maleId: 'x', date: '2026-03-01', dueDate: dueDate('goat', '2026-03-01') }
     const a = computeAlerts(farm({ animals: [f], matings: [m] }), NOW)
     expect(a[0].kind).toBe('birth_overdue')
+  })
+})
+
+describe('ready for breeding / sale', () => {
+  it('finds females ready to breed', () => {
+    const maiden = animal({ dob: addDays(NOW, -320) })
+    const tooYoung = animal({ dob: addDays(NOW, -200) })
+    const heavyYoung = animal({ dob: addDays(NOW, -200) })
+    const pregnant = animal({ dob: '2023-01-01' })
+    const justKidded = animal({ dob: '2023-01-01' })
+    const rested = animal({ dob: '2023-01-01' })
+    const male = animal({ sex: 'M', dob: '2023-01-01' })
+    const data = farm({
+      animals: [maiden, tooYoung, heavyYoung, pregnant, justKidded, rested, male],
+      weights: [{ ...base(), animalId: heavyYoung.id, date: NOW, kg: 26 }],
+      matings: [{ ...base(), femaleId: pregnant.id, maleId: male.id, date: addDays(NOW, -30), dueDate: addDays(NOW, 120) }],
+      births: [
+        { ...base(), motherId: justKidded.id, date: addDays(NOW, -20), kids: [] },
+        { ...base(), motherId: rested.id, date: addDays(NOW, -120), kids: [] },
+      ],
+    })
+    expect(readyForBreeding(data, NOW).map((a) => a.id).sort()).toEqual([maiden.id, heavyYoung.id, rested.id].sort())
+  })
+  it('finds males ready to sell, not breeding males', () => {
+    const heavy = animal({ sex: 'M', dob: addDays(NOW, -200) })
+    const old = animal({ sex: 'M', dob: addDays(NOW, -400) })
+    const light = animal({ sex: 'M', dob: addDays(NOW, -200) })
+    const stud = animal({ sex: 'M', dob: '2022-01-01', breedingMale: true })
+    const data = farm({
+      animals: [heavy, old, light, stud],
+      weights: [{ ...base(), animalId: heavy.id, date: NOW, kg: 36 }, { ...base(), animalId: light.id, date: NOW, kg: 20 }],
+    })
+    expect(readyToSell(data, NOW).map((a) => a.id).sort()).toEqual([heavy.id, old.id].sort())
+  })
+  it('counts down to Eid ul-Adha within 8 weeks', () => {
+    expect(eidSoon('2027-04-01')).toBe(46)
+    expect(eidSoon('2027-01-01')).toBeUndefined()
   })
 })
 

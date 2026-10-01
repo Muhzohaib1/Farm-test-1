@@ -1272,3 +1272,9 @@ textarea.input {
   height: auto;
   max-width: none;
 }
+
+.pill-ready {
+  background: #fff3d6;
+  color: #7a4f00;
+  margin-inline-start: 6px;
+}

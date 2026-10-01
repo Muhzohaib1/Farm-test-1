@@ -9,6 +9,7 @@ import { useI18n } from '../i18n'
 import { breedingStart, openPregnancies } from '../logic/breeding'
 import { children, isPresent } from '../logic/data'
 import { lastFamacha } from '../logic/health'
+import { readyForBreeding, readyToSell } from '../logic/readiness'
 import { animalTimeline, type EventGroup } from '../logic/timeline'
 import { daysBetween, fmtDate, parse, today } from '../lib/dates'
 import { fmtAge, fmtPKR, kindName, sexIcon, speciesIcon } from '../lib/format'
@@ -72,6 +73,7 @@ export function AnimalProfile() {
   const sale = data.sales.find((s) => s.animalId === a.id)
   const death = data.deaths.find((d) => d.animalId === a.id)
   const bStart = a.sex === 'M' ? breedingStart(a, data.matings) : undefined
+  const readiness = readyForBreeding(data, now).some((x) => x.id === a.id) ? 'ready_breed' : readyToSell(data, now).some((x) => x.id === a.id) ? 'ready_sell' : undefined
 
   const actions: Array<{ to: string; icon: string; label: string; show: boolean }> = [
     { to: `/weight?animal=${a.id}`, icon: '⚖️', label: t('rec_weight'), show: present },
@@ -94,6 +96,7 @@ export function AnimalProfile() {
           <div>{sexIcon(a.sex)} {kindName(t, a)} · {t(`breed_${a.breed}`)}</div>
           <div className="muted">{fmtAge(t, a.dob, a.exitDate ?? now)}{a.dobApprox ? ' ~' : ''}</div>
           <span className={`pill pill-${a.status}`}>{t(`status_${a.status}`)}</span>
+          {readiness && <span className="pill pill-ready">{t(readiness)}</span>}
         </div>
       </div>
 

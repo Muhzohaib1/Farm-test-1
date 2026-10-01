@@ -5,6 +5,7 @@ import { MALE_REPLACE_DAYS, breedingStart, openPregnancies } from './breeding'
 import { ageDays, isPresent, type FarmData } from './data'
 import { FAMACHA_DUE_DAYS, famachaDue, famachaRecheck, flaggedAnimals, repeatedGroup, riskReason, vaccinesDue } from './health'
 import { quarantineState } from './quarantine'
+import { eidSoon, readyForBreeding, readyToSell } from './readiness'
 
 export type Level = 'red' | 'amber' | 'green'
 
@@ -28,6 +29,9 @@ export interface Alert {
     | 'separate_males'
     | 'dewormer_repeat'
     | 'duplicate_tag'
+    | 'ready_breed'
+    | 'ready_sell'
+    | 'eid_sell'
   params: Record<string, string | number>
   tags?: string[]
   link: string
@@ -140,6 +144,23 @@ export function computeAlerts(data: FarmData, now: ISODate): Alert[] {
       id: 'separate', level: 'amber', kind: 'separate_males', params: { n: toSeparate.length },
       tags: tagsOf(toSeparate), link: '/animals?filter=separate',
     })
+  }
+
+  // Females ready to be put with a male
+  const breedable = readyForBreeding(data, now)
+  if (breedable.length) {
+    out.push({ id: 'ready-breed', level: 'green', kind: 'ready_breed', params: { n: breedable.length }, tags: tagsOf(breedable), link: '/animals?filter=breed' })
+  }
+
+  // Males ready to sell (stronger reminder in the weeks before Eid ul-Adha)
+  const sellable = readyToSell(data, now)
+  if (sellable.length) {
+    const eid = eidSoon(now)
+    out.push(
+      eid !== undefined
+        ? { id: 'ready-sell', level: 'amber', kind: 'eid_sell', params: { n: sellable.length, days: eid }, tags: tagsOf(sellable), link: '/animals?filter=sell' }
+        : { id: 'ready-sell', level: 'green', kind: 'ready_sell', params: { n: sellable.length }, tags: tagsOf(sellable), link: '/animals?filter=sell' },
+    )
   }
 
   // Duplicate tags (possible if two phones added animals while both offline)
