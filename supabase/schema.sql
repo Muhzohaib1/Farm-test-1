@@ -50,6 +50,12 @@ drop policy if exists records_update on records;
 create policy records_update on records for update using (is_member()) with check (is_member());
 -- No delete policy: records are only ever marked deleted, never removed.
 
+-- Data API access. Supabase stopped granting this automatically for new tables (Oct 2026),
+-- so it is granted explicitly. Row Level Security above still decides which rows anyone sees.
+grant select, insert, update, delete on public.farm_members to authenticated, service_role;
+grant select, insert, update, delete on public.records to authenticated, service_role;
+grant usage, select on sequence public.records_seq to authenticated, service_role;
+
 -- Upload a batch of records. The newer edit (by updated_at) wins.
 create or replace function push_records(rows jsonb) returns void
 language sql security invoker set search_path = public as $$
@@ -91,6 +97,10 @@ create table if not exists app_config (
 alter table app_config enable row level security;
 drop policy if exists config_public_read on app_config;
 create policy config_public_read on app_config for select using (is_member() and key = 'vapid_public');
+
+-- Data API access (Supabase no longer grants this automatically for new tables).
+grant select, insert, update, delete on public.push_subscriptions to authenticated, service_role;
+grant select, insert, update, delete on public.app_config to authenticated, service_role;
 
 -- >>> CHANGE THIS to the owner's email, then run. <<<
 insert into farm_members (email, name, role)

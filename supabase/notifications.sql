@@ -26,3 +26,7 @@ create table if not exists app_config (
 alter table app_config enable row level security;
 drop policy if exists config_public_read on app_config;
 create policy config_public_read on app_config for select using (is_member() and key = 'vapid_public');
+
+-- Data API access (Supabase no longer grants this automatically for new tables).
+grant select, insert, update, delete on public.push_subscriptions to authenticated, service_role;
+grant select, insert, update, delete on public.app_config to authenticated, service_role;
