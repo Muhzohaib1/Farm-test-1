@@ -1,4 +1,4 @@
-import type { ISODate } from '../db/types'
+import { expenseKind, type ISODate } from '../db/types'
 import type { FarmData } from '../logic/data'
 import { daysBetween, fmtDate, today } from './dates'
 import { compareTags } from './tags'
@@ -91,8 +91,8 @@ export function buildSheets(data: FarmData): Sheet[] {
     },
     {
       name: 'Expenses',
-      headers: ['Date', 'Category', 'Amount (PKR)', 'Note', 'Invoice photo in app'],
-      rows: byDate(data.expenses).map((x) => [d(x.date), x.category, x.amount, x.note, x.hasPhoto ? 'yes' : '']),
+      headers: ['Date', 'Type', 'Category', 'Amount (PKR)', 'Note', 'Invoice photo in app'],
+      rows: byDate(data.expenses).map((x) => [d(x.date), expenseKind(x.category) === 'capital' ? 'One-time investment' : 'Running cost', x.category, x.amount, x.note, x.hasPhoto ? 'yes' : '']),
     },
     {
       name: 'Tag replacements',

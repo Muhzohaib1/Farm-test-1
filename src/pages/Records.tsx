@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AnimalPicker, Btn, Choice, DateField, Field, HerdPicker, NumIn, Page, Req, TextArea, TextIn, toast, toNum } from '../components/ui'
 import { useFarm, usePhoto } from '../data'
 import { add, batch, tbl, update, uuid } from '../db/db'
-import { DEATH_CAUSES, EXPENSE_CATEGORIES, SALE_REASONS, type DeathCause, type ExpenseCategory, type SaleReason } from '../db/types'
+import { CAPITAL_CATEGORIES, DEATH_CAUSES, RUNNING_CATEGORIES, SALE_REASONS, expenseKind, type DeathCause, type ExpenseCategory, type ExpenseKind, type SaleReason } from '../db/types'
 import { useI18n } from '../i18n'
 import { today } from '../lib/dates'
 import { fmtAge } from '../lib/format'
@@ -200,6 +200,8 @@ export function ExpenseForm() {
   const editing = useEditing('expenses')
   const saved = useSaved()
   const existingPhoto = usePhoto(editing?.hasPhoto ? editing.id : undefined)
+  const kindParam = useParam('kind')
+  const [kind, setKind] = useState<ExpenseKind>(editing ? expenseKind(editing.category) : kindParam === 'capital' ? 'capital' : 'running')
   const [category, setCategory] = useState<ExpenseCategory | undefined>(editing?.category)
   const [amount, setAmount] = useState(editing?.amount?.toString() ?? '')
   const [date, setDate] = useState(editing?.date ?? today())
@@ -241,9 +243,28 @@ export function ExpenseForm() {
 
   return (
     <Page title={t('expense')}>
-      <Field label={<Req>{t('category')}</Req>}>
-        <Choice value={category} onChange={setCategory} cols={2} options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: t(`cat_${c}`) }))} />
+      <Field label={<Req>{t('expense_type')}</Req>}>
+        <Choice
+          value={kind}
+          onChange={(k) => {
+            setKind(k)
+            if (category && expenseKind(category) !== k) setCategory(undefined)
+          }}
+          options={[
+            { value: 'running', label: <span className="kind-opt"><b>🔁 {t('kind_running')}</b><small>{t('kind_running_help')}</small></span> },
+            { value: 'capital', label: <span className="kind-opt"><b>🏗️ {t('kind_capital')}</b><small>{t('kind_capital_help')}</small></span> },
+          ]}
+        />
       </Field>
+      <Field label={<Req>{t('category')}</Req>}>
+        <Choice
+          value={category}
+          onChange={setCategory}
+          cols={2}
+          options={(kind === 'capital' ? CAPITAL_CATEGORIES : RUNNING_CATEGORIES).map((c) => ({ value: c, label: t(`cat_${c}`) }))}
+        />
+      </Field>
+      {kind === 'capital' && <p className="muted small">🐑 {t('animals_bought_note')}</p>}
       <Field label={<Req>{t('amount')}</Req>}><NumIn value={amount} onChange={setAmount} /></Field>
       <DateField label={<Req>{t('date')}</Req>} value={date} onChange={setDate} max={today()} />
       <Field label={`${t('notes')} (${t('optional')})`}><TextIn value={note} onChange={setNote} /></Field>

@@ -6,7 +6,7 @@ import { nextTag, nextTags, tagPrefix, tagTaken } from '../lib/tags'
 import { computeAlerts } from './alerts'
 import { checkInbreeding, dueDate, openPregnancies } from './breeding'
 import { buildData, type RawData } from './data'
-import { ledger, summarise } from './finance'
+import { investmentRecovery, ledger, summarise } from './finance'
 import { famachaAdvice, famachaDue, famachaRecheck, flaggedAnimals, repeatedGroup, riskReason, vaccinesDue } from './health'
 import { quarantineState } from './quarantine'
 import { headcount, herdOverTime, last12Months } from './stats'
@@ -306,9 +306,23 @@ describe('stats and money', () => {
     })
     const s = summarise(ledger(data), '2026')
     expect(s.income).toBe(77000)
-    expect(s.cost).toBe(51500)
-    expect(s.profit).toBe(25500)
+    expect(s.running).toBe(11500) // feed + vet treatment
+    expect(s.livestock).toBe(40000) // bought animal: investment, not a monthly loss
+    expect(s.profit).toBe(65500)
     expect(s.byCategory.vet).toBe(1500)
     expect(summarise(ledger(data), '2026-06').profit).toBe(75000)
+  })
+  it('keeps one-time investments out of profit and tracks how much is earned back', () => {
+    const data = farm({
+      sales: [{ ...base(), animalId: 'x', date: '2026-06-10', price: 100000, reason: 'eid' }],
+      expenses: [
+        { ...base(), date: '2026-03-01', category: 'feed', amount: 20000 },
+        { ...base(), date: '2026-03-05', category: 'building', amount: 300000 },
+        { ...base(), date: '2026-04-01', category: 'machinery', amount: 100000 },
+      ],
+    })
+    const s = summarise(ledger(data), '2026-03')
+    expect(s).toMatchObject({ running: 20000, capital: 300000, profit: -20000 })
+    expect(investmentRecovery(ledger(data))).toMatchObject({ invested: 400000, earned: 80000, pct: 20 })
   })
 })

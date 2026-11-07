@@ -1278,3 +1278,32 @@ textarea.input {
   color: #7a4f00;
   margin-inline-start: 6px;
 }
+
+/* ---------- expense type ---------- */
+.kind-opt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kind-opt small {
+  font-weight: 400;
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+.invest-meter {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.invest-meter span {
+  display: block;
+  height: 100%;
+  background: #2a78d6;
+}
+.cat-group {
+  margin: 6px 0 2px;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  font-weight: 700;
+}

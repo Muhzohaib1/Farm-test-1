@@ -167,10 +167,17 @@ export interface Sale extends Base {
   reason: SaleReason
 }
 
-export const EXPENSE_CATEGORIES = [
-  'feed', 'medicine', 'vet', 'labour', 'rent', 'equipment', 'transport', 'other',
-] as const
+/** Day-to-day costs of running the farm: taken off monthly profit. */
+export const RUNNING_CATEGORIES = ['feed', 'medicine', 'vet', 'labour', 'rent', 'equipment', 'transport', 'other'] as const
+/** One-time investments in the farm itself: counted as investment, not as a monthly loss. */
+export const CAPITAL_CATEGORIES = ['land', 'building', 'machinery', 'water', 'fencing', 'vehicle', 'capital_other'] as const
+export const EXPENSE_CATEGORIES = [...RUNNING_CATEGORIES, ...CAPITAL_CATEGORIES] as const
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number]
+export type ExpenseKind = 'running' | 'capital'
+
+export function expenseKind(c: ExpenseCategory): ExpenseKind {
+  return (CAPITAL_CATEGORIES as readonly string[]).includes(c) ? 'capital' : 'running'
+}
 
 export interface Expense extends Base {
   date: ISODate
